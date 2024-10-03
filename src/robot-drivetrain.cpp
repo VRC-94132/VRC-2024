@@ -1,7 +1,9 @@
 #include "robot-drivetrain.h"
 
+using namespace vex;
+
 // Constructor to initialize the custom drivetrain
-RDrivetrain::RDrivetrain(vex::motor_group& leftMotorsGroup, vex::motor_group& rightMotorsGroup, vex::smartdrive& rSmartDrive) 
+RDrivetrain::RDrivetrain(motor_group& leftMotorsGroup, motor_group& rightMotorsGroup, smartdrive& rSmartDrive) 
     : _leftMotors(leftMotorsGroup), _rightMotors(rightMotorsGroup), _drivetrain(rSmartDrive)  // initialize the references
 {
     // Do nothing for now because the references are already initialized

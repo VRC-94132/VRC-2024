@@ -26,12 +26,12 @@ motor conveyorMotor(PORT6, ratio18_1, true);
 digital_out goalGrabberPiston(Brain.ThreeWirePort.A);
 digital_out hookPiston(Brain.ThreeWirePort.B);
 
+// setup drivetrain (it's a smartdrive!!)
+smartdrive smartDrivetrain(leftMotors, rightMotors, brainInertial, 259.34, 320, 40, mm, 1);
+
 // init function
 void hwInit( void ) {
     // setup inertial sensor
     brainInertial.calibrate();  // calibrate the inertial sensor
     waitUntil(!brainInertial.isCalibrating());
-
-    // setup drivetrain (it's a smartdrive!!)
-    smartdrive robotDrivetrain(leftMotors, rightMotors, brainInertial, 259.34, 320, 40, mm, 1);
 }

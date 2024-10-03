@@ -2,13 +2,12 @@
 #include "subsystems.h"
 #include "robot-drivetrain.h"
 #include "display.h"
-#include "gif.h"
 
 using namespace vex;
 
 // instantiate the components
 Display display;
-RDrivetrain driveSystem(leftMotors, rightMotors, robotDrivetrain);
+RDrivetrain driveSystem(leftMotors, rightMotors, smartDrivetrain);
 Conveyor conveyorSystem(conveyorMotor);
 Intake intakeSystem(intakeMotor);
 GoalGrabber goalGrabberSystem(goalGrabberPiston);

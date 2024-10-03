@@ -12,7 +12,7 @@ extern vex::motor rightMotorB;
 extern vex::motor_group leftMotors;
 extern vex::motor_group rightMotors;
 
-extern vex::smartdrive robotDrivetrain;   // the drivetrain
+extern vex::smartdrive smartDrivetrain;   // the drivetrain
 
 // other devices
 extern vex::motor intakeMotor;    // the motor for the ring intake
