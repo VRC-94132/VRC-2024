@@ -1,15 +1,24 @@
-using namespace vex;
+// brain and sensors
+extern vex::brain Brain;
+extern vex::controller Controller;
+extern vex::inertial brainInertial;
 
-extern brain Brain;
+// drivetrain motors
+extern vex::motor leftMotorA;
+extern vex::motor leftMotorB;
+extern vex::motor rightMotorA;
+extern vex::motor rightMotorB;
 
-// VEXcode devices
-extern smartdrive Drivetrain;
-extern motor ClawMotor;
-extern motor ArmMotor;
+extern vex::motor_group leftMotors;
+extern vex::motor_group rightMotors;
 
-/**
- * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
- * 
- * This should be called at the start of your int main function.
- */
-void  vexcodeInit( void );
+extern vex::smartdrive robotDrivetrain;   // the drivetrain
+
+// other devices
+extern vex::motor intakeMotor;    // the motor for the ring intake
+extern vex::motor conveyorMotor;  // the motor for the conveyor belt
+
+extern vex::digital_out goalGrabberPiston;   // piston that press down to the mobile goal
+extern vex::digital_out hookPiston;         // piston that pulls the robot up
+
+void  hwInit( void );

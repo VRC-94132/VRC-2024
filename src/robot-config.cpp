@@ -1,49 +1,37 @@
 #include "vex.h"
+#include "robot-config.h"
 
 using namespace vex;
-using signature = vision::signature;
-using code = vision::code;
 
-// A global instance of brain used for printing to the V5 Brain screen
+// brain and sensors
 brain  Brain;
+controller Controller;
+inertial brainInertial(PORT3);
 
-// VEXcode device constructors
-motor leftMotorA = motor(PORT1, ratio18_1, false);
-motor leftMotorB = motor(PORT10, ratio18_1, false);
-motor_group LeftDriveSmart = motor_group(leftMotorA, leftMotorB);
+// drivetrain motors
+motor leftMotorA(PORT1, ratio18_1, false);
+motor leftMotorB(PORT10, ratio18_1, false);
 
-motor rightMotorA = motor(PORT11, ratio18_1, true); 
-motor rightMotorB = motor(PORT20, ratio18_1, true); 
-motor_group RightDriveSmart = motor_group(rightMotorA, rightMotorB);
+motor rightMotorA(PORT9, ratio18_1, true);
+motor rightMotorB(PORT2, ratio18_1, true);
 
-gyro TurnGyroSmart = gyro(Brain.ThreeWirePort.D);
-smartdrive Drivetrain= smartdrive(LeftDriveSmart, RightDriveSmart, TurnGyroSmart, 319.19, 320, 165, mm, 1);
-motor ClawMotor = motor(PORT3, ratio18_1, false);
-motor ArmMotor = motor(PORT8, ratio18_1, false);
+motor_group leftMotors(leftMotorA, leftMotorB);
+motor_group rightMotors(rightMotorA, rightMotorB);
 
-// VEXcode generated functions
+// catapult motor
+motor intakeMotor(PORT5, ratio18_1, true);
+motor conveyorMotor(PORT6, ratio18_1, true);
 
+// pistons
+digital_out goalGrabberPiston(Brain.ThreeWirePort.A);
+digital_out hookPiston(Brain.ThreeWirePort.B);
 
+// init function
+void hwInit( void ) {
+    // setup inertial sensor
+    brainInertial.calibrate();  // calibrate the inertial sensor
+    waitUntil(!brainInertial.isCalibrating());
 
-/**
- * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
- * 
- * This should be called at the start of your int main function.
- */
-void vexcodeInit( void ) {
-  Brain.Screen.print("Device initialization...");
-  Brain.Screen.setCursor(2, 1);
-  // calibrate the drivetrain gyro
-  wait(200, msec);
-  TurnGyroSmart.calibrate();
-  Brain.Screen.print("Calibrating Gyro for Drivetrain");
-  // wait for the gyro calibration process to finish
-  while (TurnGyroSmart.isCalibrating()) {
-    wait(25, msec);
-  }
-  // reset the screen now that the calibration is complete
-  Brain.Screen.clearScreen();
-  Brain.Screen.setCursor(1,1);
-  wait(50, msec);
-  Brain.Screen.clearScreen();
+    // setup drivetrain (it's a smartdrive!!)
+    smartdrive robotDrivetrain(leftMotors, rightMotors, brainInertial, 259.34, 320, 40, mm, 1);
 }
