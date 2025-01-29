@@ -1,6 +1,7 @@
 #include "vex.h"    // includes the VEX library & the robot configuration
 #include "subsystems.h"
 #include "robot-drivetrain.h"
+#include "robot-config.h"
 #include "display.h"
 
 using namespace vex;
@@ -17,7 +18,18 @@ competition Competition;
 
 // user control function
 void userctl(void) {
-    
+    while (true)
+    {
+        if (Controller.ButtonA.pressing()) {
+            Brain.Screen.setCursor(10, 1);
+            Brain.Screen.print("Button A pressed");
+            goalGrabberSystem.hold();
+        } else {
+            Brain.Screen.setCursor(10, 1);
+            Brain.Screen.print("Button A not pressed");
+            goalGrabberSystem.release();
+        }
+    }
 }
 
 // autonomous function
@@ -28,6 +40,7 @@ void autonomous(void) {
 // pre-autonomous function
 void pre_auton(void) {
     hwInit();
+    display.init();
 }
 
 int main() {

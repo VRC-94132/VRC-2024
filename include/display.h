@@ -12,7 +12,14 @@ private:
 
 public:
     Display();
-    void update(double newInputVectorX, double newInputVectorY, double newLeftMotorSpeed, int newRightMotorSpeed);
+    void update(
+        double newInputVectorX, double newInputVectorY,
+        double newLeftMotorSpeed, int newRightMotorSpeed
+    );
+    void drawImageAsset(
+        const char* imageColors[], const int imageIndices[],
+        const int imageIndiceSize, const int imageCounts[]
+    );
     void init();
 };
 
