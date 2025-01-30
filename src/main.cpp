@@ -9,7 +9,8 @@ using namespace vex;
 // instantiate the components
 Display display;
 RDrivetrain driveSystem(leftMotors, rightMotors, smartDrivetrain);
-Conveyor conveyorSystem(conveyorMotor);
+Conveyor conveyorSystemA(conveyorMotorA);
+Conveyor conveyorSystemB(conveyorMotorB);
 Intake intakeSystem(intakeMotor);
 GoalGrabber goalGrabberSystem(goalGrabberPiston);
 Hook hookSystem(hookPiston);
@@ -18,16 +19,33 @@ competition Competition;
 
 // user control function
 void userctl(void) {
+    bool isHolding = false;
     while (true)
     {
+        Brain.Screen.setCursor(10, 1);
         if (Controller.ButtonA.pressing()) {
-            Brain.Screen.setCursor(10, 1);
-            Brain.Screen.print("Button A pressed");
-            goalGrabberSystem.hold();
+            isHolding = !isHolding;
+            if (isHolding) {
+                goalGrabberSystem.hold();
+                Brain.Screen.print("Holding");
+            } else {
+                goalGrabberSystem.release();
+            }
+            while (Controller.ButtonA.pressing()) { wait(20, msec); }
+        }
+
+        if (Controller.ButtonB.pressing()) {
+            conveyorSystemA.up(100);
+            conveyorSystemB.up(100);
         } else {
-            Brain.Screen.setCursor(10, 1);
-            Brain.Screen.print("Button A not pressed");
-            goalGrabberSystem.release();
+            conveyorSystemA.up(0);
+            conveyorSystemB.up(0);
+        }
+
+        if (Controller.ButtonY.pressing()) {
+            intakeSystem.in(100);
+        } else {
+            intakeSystem.in(0);
         }
     }
 }

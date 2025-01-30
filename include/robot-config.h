@@ -16,7 +16,10 @@ extern vex::smartdrive smartDrivetrain;   // the drivetrain
 
 // other devices
 extern vex::motor intakeMotor;    // the motor for the ring intake
-extern vex::motor conveyorMotor;  // the motor for the conveyor belt
+
+extern vex::motor conveyorMotorA;  // the motor for the conveyor belt
+extern vex::motor conveyorMotorB;  // the motor for the conveyor belt
+extern vex::motor_group conveyorMotors;  // the motor group for the conveyor belt
 
 extern vex::digital_out goalGrabberPiston;   // piston that press down to the mobile goal
 extern vex::digital_out hookPiston;         // piston that pulls the robot up

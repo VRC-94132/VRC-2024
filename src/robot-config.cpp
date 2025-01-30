@@ -20,7 +20,10 @@ motor_group rightMotors(rightMotorA, rightMotorB);
 
 // catapult motor
 motor intakeMotor(PORT5, ratio18_1, true);
-motor conveyorMotor(PORT6, ratio18_1, true);
+
+motor conveyorMotorA(PORT6, ratio18_1, false);
+motor conveyorMotorB(PORT7, ratio18_1, true);
+motor_group conveyorMotors(leftMotorA, leftMotorB);
 
 // pistons
 digital_out goalGrabberPiston(Brain.ThreeWirePort.A);
