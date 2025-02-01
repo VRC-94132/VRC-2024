@@ -22,6 +22,22 @@ void userctl(void) {
     bool isHolding = false;
     while (true)
     {
+        int forward = Controller.Axis3.position();
+        int turn = Controller.Axis1.position();
+        
+        int leftSpeed = forward + turn;
+        int rightSpeed = forward - turn;
+        
+        if (abs(leftSpeed) < 5) leftSpeed = 0;
+        if (abs(rightSpeed) < 5) rightSpeed = 0;
+        
+        if (leftSpeed > 100) leftSpeed = 100;
+        if (leftSpeed < -100) leftSpeed = -100;
+        if (rightSpeed > 100) rightSpeed = 100;
+        if (rightSpeed < -100) rightSpeed = -100;
+        
+        driveSystem.rmove(leftSpeed, rightSpeed);
+
         Brain.Screen.setCursor(10, 1);
         if (Controller.ButtonA.pressing()) {
             isHolding = !isHolding;
