@@ -29,11 +29,10 @@ public:
 
 class Clamper {
 private:
-  pros::adi::Pneumatics &_piston1;
-  pros::adi::Pneumatics &_piston2;
+  pros::adi::Pneumatics &_piston;
 
 public:
-  Clamper(pros::adi::Pneumatics &piston1, pros::adi::Pneumatics &piston2);
+  Clamper(pros::adi::Pneumatics &piston);
   void hold();
   void release();
   void toggle();

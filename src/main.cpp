@@ -12,18 +12,17 @@
 
 pros::Controller primary(pros::E_CONTROLLER_MASTER);
 pros::Controller secondary(pros::E_CONTROLLER_PARTNER);
-pros::adi::Pneumatics clamperPiston1(0, false);
-pros::adi::Pneumatics clamperPiston2(1, false);
-pros::Motor intakeMotor(1);
-pros::Motor conveyerMotor1(2);
-pros::Motor conveyerMotor2(3);
-pros::MotorGroup leftMotors({4, 5}, pros::MotorGearset::green);
-pros::MotorGroup rightMotors({6, 7}, pros::MotorGearset::green);
-pros::Imu imu(8);
+pros::adi::Pneumatics clamperPiston1('D', false);
+pros::Motor intakeMotor(20);
+pros::Motor conveyerMotor1(19);
+pros::Motor conveyerMotor2(18);
+pros::MotorGroup leftMotors({13, 14}, pros::MotorGearset::green);
+pros::MotorGroup rightMotors({11, 12}, pros::MotorGearset::green);
+pros::Imu imu(17);
 
 Intake intake(intakeMotor);
 Conveyer conveyer(conveyerMotor1, conveyerMotor2);
-Clamper clamper(clamperPiston1, clamperPiston2);
+Clamper clamper(clamperPiston1);
 
 lemlib::Drivetrain drivetrain(&leftMotors, &rightMotors,
                               10.5, // may want to adjust if it tweaks
@@ -36,15 +35,15 @@ lemlib::OdomSensors sensors(nullptr, nullptr, nullptr, nullptr, &imu);
 // pasted from lemlib docs
 // lateral PID controller
 lemlib::ControllerSettings
-    lateral_controller(10,  // proportional gain (kP)
+    lateral_controller(20,  // proportional gain (kP)
                        0,   // integral gain (kI)
-                       3,   // derivative gain (kD)
+                       0,   // derivative gain (kD)
                        3,   // anti windup
                        1,   // small error range, in inches
                        100, // small error range timeout, in milliseconds
                        3,   // large error range, in inches
                        500, // large error range timeout, in milliseconds
-                       20   // maximum acceleration (slew)
+                       75   // maximum acceleration (slew)
     );
 
 // angular PID controller
@@ -77,6 +76,7 @@ void initialize() {
       pros::delay(20);
     }
   });
+  leftMotors.set_reversed(true);
 }
 
 void disabled() {}
@@ -86,8 +86,16 @@ void opcontrol() {
   while (true) {
     // if you'd like to change this, look at
     // https://lemlib.readthedocs.io/en/stable/tutorials/3_driver_control.html
-    chassis.arcade(primary.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y),
-                   primary.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X));
+    /*
+    chassis.tank(
+      primary.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y),
+      -primary.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X)
+    );*/
+
+    int leftPower = primary.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+    int rightPower = -primary.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+    leftMotors.move(leftPower);
+    rightMotors.move(rightPower);
 
     // intake
     if (secondary.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
@@ -105,7 +113,7 @@ void opcontrol() {
       conveyer.up(0);
     }
 
-    if (secondary.get_digital(pros::E_CONTROLLER_DIGITAL_Y)) {
+    if (secondary.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)) {
       clamper.toggle();
     }
 
