@@ -56,7 +56,7 @@ void Display::init() {
     // draw endfield logo
     Brain.Screen.clearScreen();
     drawImageAsset(endfieldLogoCLR, endfieldLogoIDX, endfieldLogoISZ, endfieldLogoCNT);
-    vex::wait(5, vex::sec);
+    vex::wait(1, vex::sec);
     Brain.Screen.clearScreen();
 
     // display the OS version

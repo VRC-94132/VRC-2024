@@ -6,27 +6,27 @@ using namespace vex;
 // brain and sensors
 brain  Brain;
 controller Controller;
-inertial brainInertial(PORT3);
+inertial brainInertial(PORT17);
 
 // drivetrain motors
-motor leftMotorA(PORT1, ratio18_1, false);
-motor leftMotorB(PORT10, ratio18_1, false);
+motor leftMotorA(PORT13, ratio18_1, false);
+motor leftMotorB(PORT14, ratio18_1, true);
 
-motor rightMotorA(PORT9, ratio18_1, true);
-motor rightMotorB(PORT2, ratio18_1, true);
+motor rightMotorA(PORT12, ratio18_1, true);
+motor rightMotorB(PORT11, ratio18_1, false);
 
 motor_group leftMotors(leftMotorA, leftMotorB);
 motor_group rightMotors(rightMotorA, rightMotorB);
 
 // catapult motor
-motor intakeMotor(PORT5, ratio18_1, true);
+motor intakeMotor(PORT20, ratio18_1, false);
 
-motor conveyorMotorA(PORT6, ratio18_1, false);
-motor conveyorMotorB(PORT7, ratio18_1, true);
+motor conveyorMotorA(PORT19, ratio18_1, false);
+motor conveyorMotorB(PORT18, ratio18_1, true);
 motor_group conveyorMotors(leftMotorA, leftMotorB);
 
 // pistons
-digital_out goalGrabberPiston(Brain.ThreeWirePort.A);
+digital_out goalGrabberPiston(Brain.ThreeWirePort.D);
 digital_out hookPiston(Brain.ThreeWirePort.B);
 
 // setup drivetrain (it's a smartdrive!!)

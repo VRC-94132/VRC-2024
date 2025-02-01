@@ -28,13 +28,13 @@ void userctl(void) {
         int leftSpeed = forward + turn;
         int rightSpeed = forward - turn;
         
-        if (abs(leftSpeed) < 5) leftSpeed = 0;
-        if (abs(rightSpeed) < 5) rightSpeed = 0;
+        //if (abs(leftSpeed) < 5) leftSpeed = 0;
+        //if (abs(rightSpeed) < 5) rightSpeed = 0;
         
-        if (leftSpeed > 100) leftSpeed = 100;
-        if (leftSpeed < -100) leftSpeed = -100;
-        if (rightSpeed > 100) rightSpeed = 100;
-        if (rightSpeed < -100) rightSpeed = -100;
+        //if (leftSpeed > 100) leftSpeed = 100;
+        //if (leftSpeed < -100) leftSpeed = -100;
+        //if (rightSpeed > 100) rightSpeed = 100;
+        //if (rightSpeed < -100) rightSpeed = -100;
         
         driveSystem.rmove(leftSpeed, rightSpeed);
 
