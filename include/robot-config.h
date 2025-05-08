@@ -15,7 +15,8 @@ extern vex::motor_group rightMotors;
 extern vex::smartdrive smartDrivetrain;   // the drivetrain
 
 // other devices
-extern vex::motor intakeMotor;    // the motor for the ring intake
+extern vex::motor intakeMotorA;    // the motor for the ring intake (outer)
+extern vex::motor intakeMotorB;    // the motor for the ring intake (inner)
 
 extern vex::motor conveyorMotorA;  // the motor for the conveyor belt
 extern vex::motor conveyorMotorB;  // the motor for the conveyor belt

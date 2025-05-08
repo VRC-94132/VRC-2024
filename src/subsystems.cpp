@@ -3,7 +3,7 @@
 using namespace vex;
 
 // Constructor for the conveyor belt / wheel system
-Conveyor::Conveyor(motor& conveyorMotor): _conveyorMotor(conveyorMotor) {}
+Conveyor::Conveyor(motor_group& conveyorMotor): _conveyorMotor(conveyorMotor) {}
 
 // Move the conveyor belt up
 void Conveyor::up(int speed) {
@@ -16,16 +16,19 @@ void Conveyor::down(int speed) {
 }
 
 // Constructor for the intake wheel system
-Intake::Intake(motor& intakeMotor) : _intakeMotor(intakeMotor) {}
+Intake::Intake(motor& intakeMotorA, motor& intakeMotorB) :
+    _intakeMotorA(intakeMotorA), _intakeMotorB(intakeMotorB) {}
 
 // Move the intake wheels in
 void Intake::in(int speed) {
-    _intakeMotor.spin(forward, speed, pct);
+    _intakeMotorA.spin(forward, speed, pct);
+    _intakeMotorB.spin(forward, speed, pct);
 }
 
 // Move the intake wheels out
 void Intake::out(int speed) {
-    _intakeMotor.spin(reverse, speed, pct);
+    _intakeMotorA.spin(reverse, speed, pct);
+    _intakeMotorB.spin(reverse, speed, pct);
 }
 
 // Constructor for the goal grabbing system
@@ -33,12 +36,12 @@ GoalGrabber::GoalGrabber(digital_out& goalGrabberPiston) : _goalGrabberPiston(go
 
 // Hold the goal
 void GoalGrabber::hold() {
-    _goalGrabberPiston.set(true);
+    _goalGrabberPiston.set(false);
 }
 
 // Release the goal
 void GoalGrabber::release() {
-    _goalGrabberPiston.set(false);
+    _goalGrabberPiston.set(true);
 }
 
 // Constructor for the hook system

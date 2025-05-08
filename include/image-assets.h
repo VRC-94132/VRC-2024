@@ -13,10 +13,22 @@ extern const int endfieldLogoIDX[];
 extern const int endfieldLogoISZ;
 extern const int endfieldLogoCNT[];
 
-// endfield_indus_logo.png
-extern const char* endfieldIndusLogoCLR[];
-extern const int endfieldIndusLogoIDX[];
-extern const int endfieldIndusLogoISZ;
-extern const int endfieldIndusLogoCNT[];
+// boot base
+extern const char* bootBaseCLR[];
+extern const int bootBaseIDX[];
+extern const int bootBaseISZ;
+extern const int bootBaseCNT[];
+
+// auton base
+extern const char* autonBaseCLR[];
+extern const int autonBaseIDX[];
+extern const int autonBaseISZ;
+extern const int autonBaseCNT[];
+
+// auton base
+extern const char* userctlBaseCLR[];
+extern const int userctlBaseIDX[];
+extern const int userctlBaseISZ;
+extern const int userctlBaseCNT[];
 
 #endif // IMAGE_ASSETS_H

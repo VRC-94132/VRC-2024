@@ -6,10 +6,10 @@
 // class for the conveyor belt / wheel system
 class Conveyor {
 private:
-    vex::motor& _conveyorMotor;
+    vex::motor_group& _conveyorMotor;
 
 public:
-    Conveyor(vex::motor& conveyorMotor);
+    Conveyor(vex::motor_group& conveyorMotor);
     void up(int speed);
     void down(int speed);
 };
@@ -17,10 +17,11 @@ public:
 // class for the intake wheel system
 class Intake {
 private:
-    vex::motor& _intakeMotor;
+    vex::motor& _intakeMotorA;
+    vex::motor& _intakeMotorB;
 
 public:
-    Intake(vex::motor& intakeMotor);
+    Intake(vex::motor& intakeMotorA, vex::motor& intakeMotorB);
     void in(int speed);
     void out(int speed);
 };

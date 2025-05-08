@@ -16,6 +16,46 @@
 		"ratio": "cpp",
 		"*.tcc": "cpp",
 		"type_traits": "cpp",
-		"typeinfo": "cpp"
-	}
+		"typeinfo": "cpp",
+		"cctype": "cpp",
+		"clocale": "cpp",
+		"cwchar": "cpp",
+		"initializer_list": "cpp",
+		"iosfwd": "cpp",
+		"new": "cpp",
+		"string": "cpp",
+		"unordered_map": "cpp",
+		"vector": "cpp",
+		"array": "cpp",
+		"cwctype": "cpp",
+		"fstream": "cpp",
+		"functional": "cpp",
+		"iostream": "cpp",
+		"istream": "cpp",
+		"ostream": "cpp",
+		"sstream": "cpp",
+		"stdexcept": "cpp",
+		"streambuf": "cpp",
+		"tuple": "cpp",
+		"utility": "cpp",
+		"iomanip": "cpp"
+	},
+	"MicroPython.executeButton": [
+		{
+			"text": "▶",
+			"tooltip": "Run",
+			"alignment": "left",
+			"command": "extension.executeFile",
+			"priority": 3.5
+		}
+	],
+	"MicroPython.syncButton": [
+		{
+			"text": "$(sync)",
+			"tooltip": "sync",
+			"alignment": "left",
+			"command": "extension.execute",
+			"priority": 4
+		}
+	]
 }

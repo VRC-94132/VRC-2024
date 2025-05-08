@@ -13,10 +13,14 @@ RDrivetrain::RDrivetrain(motor_group& leftMotorsGroup, motor_group& rightMotorsG
 void RDrivetrain::rmove(int leftSpeed, int rightSpeed) {
     _leftMotors.spin(forward, leftSpeed, pct);
     _rightMotors.spin(forward, rightSpeed, pct);
-    Brain.Screen.setCursor(10, 1);
-    Brain.Screen.print(leftSpeed);
-    Brain.Screen.setCursor(10, 5);
-    Brain.Screen.print(rightSpeed);
+}
+
+void RDrivetrain::rmovesmart(int movement, int speed) {
+    _drivetrain.driveFor(movement, vex::mm, speed, vex::rpm);
+}
+
+void RDrivetrain::rturnsmart(int angle, int speed) {
+    _drivetrain.turnFor(angle, vex::degrees, speed, vex::rpm);
 }
 
 // Brake the robot
