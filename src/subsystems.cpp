@@ -2,57 +2,47 @@
 
 using namespace vex;
 
-// Constructor for the conveyor belt / wheel system
-Conveyor::Conveyor(motor_group& conveyorMotor): _conveyorMotor(conveyorMotor) {}
 
-// Move the conveyor belt up
-void Conveyor::up(int speed) {
-    _conveyorMotor.spin(forward, speed, pct);
+// Main subsystem code
+
+MainSubsystem::MainSubsystem(motor &motor1, motor &motor2, motor &motor3) :
+    _motor1(motor1), _motor2(motor2), _motor3(motor3) {}
+
+void MainSubsystem::system_default() {
+    _motor1.stop();
+    _motor2.stop();
+    _motor3.stop();
 }
 
-// Move the conveyor belt down
-void Conveyor::down(int speed) {
-    _conveyorMotor.spin(reverse, speed, pct);
+void MainSubsystem::intake(int mode) {
+    if (mode == 0) {    // intake-intake
+        _motor1.spin(reverse, 30, percent);
+        _motor2.stop();
+        _motor3.spin(reverse, 100, percent);
+    } else if (mode == 1) { // intake-hold
+        _motor1.spin(reverse, 70, percent);
+        _motor2.spin(forward, 70, percent);
+        _motor3.stop();
+    } else if (mode == 2) {    // intake-reject
+        _motor1.spin(reverse, 50, percent);
+        _motor2.spin(forward, 50, percent);
+        _motor3.spin(forward, 10, percent);
+    }
 }
 
-// Constructor for the intake wheel system
-Intake::Intake(motor& intakeMotorA, motor& intakeMotorB) :
-    _intakeMotorA(intakeMotorA), _intakeMotorB(intakeMotorB) {}
-
-// Move the intake wheels in
-void Intake::in(int speed) {
-    _intakeMotorA.spin(forward, speed, pct);
-    _intakeMotorB.spin(forward, speed, pct);
+void MainSubsystem::low() {
+    _motor1.spin(forward, 100, percent);
+    _motor3.spin(forward, 60, percent);
 }
 
-// Move the intake wheels out
-void Intake::out(int speed) {
-    _intakeMotorA.spin(reverse, speed, pct);
-    _intakeMotorB.spin(reverse, speed, pct);
+void MainSubsystem::mid() {
+    _motor1.spin(reverse, 100, percent);
+    _motor2.spin(forward, 100, percent);
+    _motor3.spin(forward, 60, percent);
 }
 
-// Constructor for the goal grabbing system
-GoalGrabber::GoalGrabber(digital_out& goalGrabberPiston) : _goalGrabberPiston(goalGrabberPiston) {}
-
-// Hold the goal
-void GoalGrabber::hold() {
-    _goalGrabberPiston.set(false);
-}
-
-// Release the goal
-void GoalGrabber::release() {
-    _goalGrabberPiston.set(true);
-}
-
-// Constructor for the hook system
-Hook::Hook(digital_out& hookPiston) : _hookPiston(hookPiston) {}
-
-// Pull the hook
-void Hook::pull() {
-    _hookPiston.set(true);
-}
-
-// Push the hook
-void Hook::push() {
-    _hookPiston.set(false);
+void MainSubsystem::high() {
+    _motor1.spin(reverse, 100, percent);
+    _motor2.spin(reverse, 100, percent);
+    _motor3.spin(forward, 60, percent);
 }

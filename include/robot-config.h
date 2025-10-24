@@ -15,14 +15,13 @@ extern vex::motor_group rightMotors;
 extern vex::smartdrive smartDrivetrain;   // the drivetrain
 
 // other devices
-extern vex::motor intakeMotorA;    // the motor for the ring intake (outer)
-extern vex::motor intakeMotorB;    // the motor for the ring intake (inner)
+extern vex::motor subsystemMotor1;
+extern vex::motor subsystemMotor2;
+extern vex::motor subsystemMotor3;
 
-extern vex::motor conveyorMotorA;  // the motor for the conveyor belt
-extern vex::motor conveyorMotorB;  // the motor for the conveyor belt
-extern vex::motor_group conveyorMotors;  // the motor group for the conveyor belt
-
-extern vex::digital_out goalGrabberPiston;   // piston that press down to the mobile goal
-extern vex::digital_out hookPiston;         // piston that pulls the robot up
+// vision sensor
+extern vex::aivision AIVision;
+extern vex::aivision::colordesc AIVision_BlueObj;
+extern vex::aivision::colordesc AIVision_RedObj;
 
 void  hwInit( void );

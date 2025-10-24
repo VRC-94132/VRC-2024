@@ -7,7 +7,11 @@ using namespace vex;
 // brain and sensors
 brain  Brain;
 controller Controller;
-inertial brainInertial(PORT16);
+inertial brainInertial(PORT17);
+
+vex::aivision::colordesc AIVision_BlueObj(2, 19, 50, 91, 27, 0.56);
+vex::aivision::colordesc AIVision_RedObj(1, 96, 25, 52, 14, 0.56);
+vex::aivision AIVision(PORT19, AIVision_RedObj, AIVision_BlueObj);
 
 // drivetrain motors
 motor leftMotorA(PORT2, ratio18_1, true);
@@ -19,17 +23,10 @@ motor rightMotorB(PORT1, ratio18_1, false);
 motor_group leftMotors(leftMotorA, leftMotorB);
 motor_group rightMotors(rightMotorA, rightMotorB);
 
-// catapult motor
-motor intakeMotorA(PORT12, ratio18_1, true);
-motor intakeMotorB(PORT17, ratio18_1, false);
-
-motor conveyorMotorA(PORT5, ratio18_1, true);
-motor conveyorMotorB(PORT18, ratio18_1, false);
-motor_group conveyorMotors(conveyorMotorA, conveyorMotorB);
-
-// pistons
-digital_out goalGrabberPiston(Brain.ThreeWirePort.A);
-digital_out hookPiston(Brain.ThreeWirePort.B);
+// main subsystem
+motor subsystemMotor1(PORT10, ratio18_1, true);
+motor subsystemMotor2(PORT11, ratio18_1, true);
+motor subsystemMotor3(PORT12, ratio18_1, true);
 
 // setup drivetrain (it's a smartdrive!!)
 // wheel travel, track width, wheel base, units, gear ratio
