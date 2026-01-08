@@ -13,6 +13,7 @@ private:
 public:
     RDrivetrain(vex::motor_group& leftMotorsGroup, vex::motor_group& rightMotorsGroup, vex::smartdrive& rSmartDrive);
     void rmove(int leftSpeed, int rightSpeed);
+    void rmovestraight(int speed);
     void rmovesmart(int movement, int speed);
     void rturnsmart(int angle, int speed);
     void rbrake(bool force);

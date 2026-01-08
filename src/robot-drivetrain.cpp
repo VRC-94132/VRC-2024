@@ -15,6 +15,10 @@ void RDrivetrain::rmove(int leftSpeed, int rightSpeed) {
     _rightMotors.spin(forward, rightSpeed, pct);
 }
 
+void RDrivetrain::rmovestraight(int speed) {
+    _drivetrain.drive(forward, speed*10, rpm);
+}
+
 void RDrivetrain::rmovesmart(int movement, int speed) {
     _drivetrain.driveFor(movement, vex::mm, speed, vex::rpm);
 }

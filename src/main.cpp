@@ -23,7 +23,8 @@ namespace patch
 // instantiate the components
 Display display;
 RDrivetrain driveSystem(leftMotors, rightMotors, smartDrivetrain);
-MainSubsystem mainSubsystem(subsystemMotor1, subsystemMotor2, subsystemMotor3);
+ScoringSubsystem scoringSubsystem(subsystemMotor1, subsystemMotor2);
+DescoreSubsystem descoreSubsystem(descorePiston);
 
 competition Competition;
 
@@ -162,29 +163,19 @@ void handleProgrammingMode(void) {
 void userctl(void) {
     display.setUIScreenID(3);
 
-    int subsysStatus = 0;   // 0=default; 1=intake; 2=low; 3=mid; 4=high
-    int intakeColor = 0;    // 0=red; 1=blue
-
-    const int QUALIFYING_OBJ_TRESH = 6000;
-    const int PROCESSING_OBJ_QUALIFYING_TRESH = 2000;
-
-    int qualifiedBlueObjPos[2] = {0, 0};
-    int qualifiedRedObjPos[2] = {0, 0};
-    int currentlyProcessingObjColor = -1; // -1=none; 0=red; 1=blue
+    int scoreSubsysStatus = 0;   // 0=default; 1=intake; 2=low; 3=mid; 4=high
+    int descoreSubsysStatus = 0; // 0=default; 1=up; 2=down
 
     while (true)
     {
-        Controller.Screen.setCursor(3,0);
-        Controller.Screen.print("INTAKE 0=R 1=B: %d  ", intakeColor);
-
         // program mode
-        if (Controller.ButtonL2.pressing()) {
-            while (Controller.ButtonL2.pressing()) { wait(20, msec); }
-            handleProgrammingMode();
-        }
+        //if (Controller.ButtonL2.pressing() && false) {
+        //    while (Controller.ButtonL2.pressing()) { wait(20, msec); }
+        //    handleProgrammingMode();
+        //}
 
         int forward = Controller.Axis3.position();
-        int turn = Controller.Axis1.position()*0.8;
+        int turn = Controller.Axis1.position()*0.5;
         
         if (Controller.ButtonL1.pressing()) {
             forward = forward*-1;
@@ -194,123 +185,62 @@ void userctl(void) {
         int rightSpeed = forward - turn*2;
 
         // underclock
-        leftSpeed *= 1;
-        rightSpeed *= 1;
+        leftSpeed *= 0.7;
+        rightSpeed *= 0.7;
+
+        if (forward < 0) {
+            rightSpeed*0.9;
+        }
 
         // set display
         display.setMotorPanel(leftSpeed, rightSpeed);
         
-        driveSystem.rmove(leftSpeed, rightSpeed);
         if (leftSpeed == 0 && rightSpeed == 0) {
             driveSystem.rbrake(false);
+        } else {
+            if (turn == 0) {
+                driveSystem.rmovestraight(forward);
+            } else {
+                driveSystem.rmove(leftSpeed, rightSpeed);
+            }
         }
 
-        // set op code
-        if (Controller.ButtonY.pressing()) {
-            while (Controller.ButtonY.pressing()) { wait(20, msec); }
-            if (subsysStatus != 1) {subsysStatus = 1;} else {subsysStatus = 0;}
-        }
-        else if (Controller.ButtonB.pressing()) {   // low
+        // set scoring subsystem status
+        if (Controller.ButtonB.pressing()) {
             while (Controller.ButtonB.pressing()) { wait(20, msec); }
-            if (subsysStatus != 2) {subsysStatus = 2;} else {subsysStatus = 0;}
-        }
-        else if (Controller.ButtonA.pressing()) {
-            while (Controller.ButtonA.pressing()) { wait(20, msec); }
-            if (subsysStatus != 3) {subsysStatus = 3;} else {subsysStatus = 0;}
+            if (scoreSubsysStatus != -1) {scoreSubsysStatus = -1;} else {scoreSubsysStatus = 0;}
         }
         else if (Controller.ButtonX.pressing()) {
             while (Controller.ButtonX.pressing()) { wait(20, msec); }
-            if (subsysStatus != 4) {subsysStatus = 4;} else {subsysStatus = 0;}
-        } else if (Controller.ButtonR1.pressing()) {
-            while (Controller.ButtonR1.pressing()) { wait(20, msec); }
-            intakeColor = (intakeColor == 0) ? 1 : 0;
+            if (scoreSubsysStatus != 1) {scoreSubsysStatus = 1;} else {scoreSubsysStatus = 0;}
         }
         
         // set motion
-        switch (subsysStatus) {
-            case 0:
-                mainSubsystem.system_default();
-                break;
+        switch (scoreSubsysStatus) {
             case 1:
-                // determine where the qualifying ball(s) of each are
-                AIVision.takeSnapshot(AIVision_RedObj);
-                if ((AIVision.largestObject.area > QUALIFYING_OBJ_TRESH) || 
-                    (currentlyProcessingObjColor == 0 && AIVision.largestObject.area > PROCESSING_OBJ_QUALIFYING_TRESH)) {
-                    qualifiedRedObjPos[0] = AIVision.largestObject.centerX;
-                    qualifiedRedObjPos[1] = AIVision.largestObject.centerY;
-                } else {
-                    qualifiedRedObjPos[0] = -1;
-                    qualifiedRedObjPos[1] = -1;
-                }
-
-                AIVision.takeSnapshot(AIVision_BlueObj);
-                if ((AIVision.largestObject.area > QUALIFYING_OBJ_TRESH) ||
-                    (currentlyProcessingObjColor == 1 && AIVision.largestObject.area > PROCESSING_OBJ_QUALIFYING_TRESH)) {
-                    qualifiedBlueObjPos[0] = AIVision.largestObject.centerX;
-                    qualifiedBlueObjPos[1] = AIVision.largestObject.centerY;
-                } else {
-                    qualifiedBlueObjPos[0] = -1;
-                    qualifiedBlueObjPos[1] = -1;
-                }
-
-                Brain.Screen.clearScreen();
-                Brain.Screen.setCursor(1,1);
-                Brain.Screen.print("R X:%d Y:%d  ", qualifiedRedObjPos[0], qualifiedRedObjPos[1]);
-                Brain.Screen.setCursor(2,1);
-                Brain.Screen.print("B X:%d Y:%d  ", qualifiedBlueObjPos[0], qualifiedBlueObjPos[1]);
-                Brain.Screen.setCursor(3,1);
-                Brain.Screen.print("P C:%d       ", currentlyProcessingObjColor);
-
-                // if there is a ball being processed, take action until it is gone
-                if (currentlyProcessingObjColor != -1) {
-                    // determine the action for this obj
-                    if (currentlyProcessingObjColor == intakeColor) {
-                        // if ball is of the desired color, intake until Y<100
-                        if ( (currentlyProcessingObjColor == 0 && qualifiedRedObjPos[1] > 150) ||
-                             (currentlyProcessingObjColor == 1 && qualifiedBlueObjPos[1] > 150) ) {
-                            mainSubsystem.intake(0);
-                        } else {
-                            // ball is gone, reset processing color
-                            currentlyProcessingObjColor = -1;
-                        }
-                    } else {
-                        // else eject until gone (x<100)
-                        if ((currentlyProcessingObjColor == 0 && qualifiedRedObjPos[0] > 130) ||
-                            (currentlyProcessingObjColor == 1 && qualifiedBlueObjPos[0] > 130) ) {
-                            // if Y pos is above 200, it might be stuck, do mode 2 (eject faster)
-                            if ((currentlyProcessingObjColor == 0 && qualifiedRedObjPos[1] < 160) ||
-                                (currentlyProcessingObjColor == 1 && qualifiedBlueObjPos[1] < 160) ) {
-                                mainSubsystem.intake(2);
-                            } else {
-                                mainSubsystem.intake(1);
-                            }
-                        } else {
-                            // ball is gone, reset processing color
-                            currentlyProcessingObjColor = -1;
-                        }
-                    }
-                    break;
-                }
-
-                // determine which has crossed the middle line (60<Y<200)
-                if (qualifiedRedObjPos[0] > 100 && qualifiedRedObjPos[1] < 200 && qualifiedRedObjPos[1] > 60) {
-                    currentlyProcessingObjColor = 0;
-                } else if (qualifiedBlueObjPos[0] > 100 && qualifiedBlueObjPos[1] < 200 && qualifiedBlueObjPos[1] > 60) {
-                    currentlyProcessingObjColor = 1;
-                } else {
-                    currentlyProcessingObjColor = -1;
-                    mainSubsystem.intake(1);
-                }
-
+                scoringSubsystem.intake();
                 break;
-            case 2:
-                mainSubsystem.low();
+            case -1:
+                scoringSubsystem.eject();
                 break;
-            case 3:
-                mainSubsystem.mid();
+            default:
+                scoringSubsystem.system_default();
                 break;
-            case 4:
-                mainSubsystem.high();
+        }
+
+        // set descore subsystem status
+        if (Controller.ButtonR2.pressing()) {
+            while (Controller.ButtonR2.pressing()) { wait(20, msec); }
+            descoreSubsysStatus = (descoreSubsysStatus == 1) ? 0 : 1;
+        }
+
+        // set motion
+        switch (descoreSubsysStatus) {
+            case 1:
+                descoreSubsystem.up();
+                break;
+            default:
+                descoreSubsystem.down();
                 break;
         }
     }
@@ -362,7 +292,7 @@ void execOperations(const std::string& input) {
                     if (status == 1) {
                         //mainSubsystem.intake();
                     } else {
-                        mainSubsystem.system_default();
+                        //mainSubsystem.system_default();
                     }
                 }
                 break;
@@ -454,8 +384,9 @@ void autonomous(void) {
     // C-(status:int 1=up 2=down 0=off)
     // W-(time:int *100)
 
-    // grab the goal
-    //execOperations("M-2-4-6 M-4-4-7 M-2-5-12 W-5 G-0 W-5");
+    // backup and then clear field
+    //execOperations("M-1-40-40 W-10 M-2-100-150");
+    //execOperations("M-2-60-90");
 
     // score 1st point, head to second, score
     //execOperations("C-1 M-2-5-3 M-4-5-10 C-0 I-1 M-1-5-11 I-0 C-1 M-3-5-2 W-5 C-0");
@@ -476,7 +407,7 @@ void pre_auton(void) {
 int main() {
     // Run the pre-autonomous function
     pre_auton();
-    autonomous();
+    //autonomous();
 
     // Set up callbacks for autonomous and driver control periods
     Competition.autonomous(autonomous);

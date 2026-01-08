@@ -4,18 +4,25 @@
 #include "vex.h"
 
 // class for the main subsystem
-class MainSubsystem {
+class ScoringSubsystem {
 private:
     vex::motor &_motor1;
     vex::motor &_motor2;
-    vex::motor &_motor3;
 public:
-    MainSubsystem(vex::motor &motor1, vex::motor &motor2, vex::motor &motor3);
+    ScoringSubsystem(vex::motor &motor1, vex::motor &motor2);
     void system_default();
-    void intake(int mode);
-    void low();
-    void mid();
-    void high();
+    void intake();
+    void eject();
+};
+
+// class for the descore subsystem
+class DescoreSubsystem {
+private:
+    vex::digital_out &_piston;
+public:
+    DescoreSubsystem(vex::digital_out &piston);
+    void up();
+    void down();
 };
 
 #endif // SUBSYSTEMS_H
