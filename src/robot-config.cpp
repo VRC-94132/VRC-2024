@@ -7,33 +7,30 @@ using namespace vex;
 // brain and sensors
 brain  Brain;
 controller Controller;
-inertial brainInertial(PORT16);
+inertial brainInertial(PORT4);
 
 // drivetrain motors
-motor leftMotorA(PORT2, ratio18_1, true);
-motor leftMotorB(PORT4, ratio18_1, true);
+motor leftMotorA(PORT8, ratio6_1, true);
+motor leftMotorB(PORT9, ratio6_1, true);
+motor leftMotorC(PORT10, ratio6_1, true);
 
-motor rightMotorA(PORT3, ratio18_1, false);
-motor rightMotorB(PORT1, ratio18_1, false);
+motor rightMotorA(PORT1, ratio6_1, false);
+motor rightMotorB(PORT2, ratio6_1, false);
+motor rightMotorC(PORT3, ratio6_1, false);
 
-motor_group leftMotors(leftMotorA, leftMotorB);
-motor_group rightMotors(rightMotorA, rightMotorB);
+motor_group leftMotors(leftMotorA, leftMotorB, leftMotorC);
+motor_group rightMotors(rightMotorA, rightMotorB, rightMotorC);
 
-// catapult motor
-motor intakeMotorA(PORT12, ratio18_1, true);
-motor intakeMotorB(PORT17, ratio18_1, false);
+// main subsystem
+motor subsystemMotor1(PORT7, ratio18_1, true);
+motor subsystemMotor2(PORT11, ratio18_1, true);
 
-motor conveyorMotorA(PORT5, ratio18_1, true);
-motor conveyorMotorB(PORT18, ratio18_1, false);
-motor_group conveyorMotors(conveyorMotorA, conveyorMotorB);
-
-// pistons
-digital_out goalGrabberPiston(Brain.ThreeWirePort.A);
-digital_out hookPiston(Brain.ThreeWirePort.B);
+// piston
+digital_out descorePiston(Brain.ThreeWirePort.A);
 
 // setup drivetrain (it's a smartdrive!!)
 // wheel travel, track width, wheel base, units, gear ratio
-smartdrive smartDrivetrain(leftMotors, rightMotors, brainInertial, 320, 250, 255, mm, 0.66);
+smartdrive smartDrivetrain(leftMotors, rightMotors, brainInertial, 320, 325, 240, mm, 2.33);
 
 // init function
 void hwInit( void ) {

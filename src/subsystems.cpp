@@ -2,57 +2,35 @@
 
 using namespace vex;
 
-// Constructor for the conveyor belt / wheel system
-Conveyor::Conveyor(motor_group& conveyorMotor): _conveyorMotor(conveyorMotor) {}
 
-// Move the conveyor belt up
-void Conveyor::up(int speed) {
-    _conveyorMotor.spin(forward, speed, pct);
+// scoring subsystem implementation
+
+ScoringSubsystem::ScoringSubsystem(motor &motor1, motor &motor2) :
+    _motor1(motor1), _motor2(motor2) {}
+
+void ScoringSubsystem::system_default() {
+    _motor1.stop();
+    _motor2.stop();
 }
 
-// Move the conveyor belt down
-void Conveyor::down(int speed) {
-    _conveyorMotor.spin(reverse, speed, pct);
+void ScoringSubsystem::intake() {
+    _motor1.spin(forward, 100, percent);
+    _motor2.spin(forward, 100, percent);
 }
 
-// Constructor for the intake wheel system
-Intake::Intake(motor& intakeMotorA, motor& intakeMotorB) :
-    _intakeMotorA(intakeMotorA), _intakeMotorB(intakeMotorB) {}
-
-// Move the intake wheels in
-void Intake::in(int speed) {
-    _intakeMotorA.spin(forward, speed, pct);
-    _intakeMotorB.spin(forward, speed, pct);
+void ScoringSubsystem::eject() {
+    _motor1.spin(reverse, 100, percent);
+    _motor2.spin(reverse, 100, percent);
 }
 
-// Move the intake wheels out
-void Intake::out(int speed) {
-    _intakeMotorA.spin(reverse, speed, pct);
-    _intakeMotorB.spin(reverse, speed, pct);
+// descore subsystem implementation
+DescoreSubsystem::DescoreSubsystem(digital_out &piston) :
+    _piston(piston) {}
+
+void DescoreSubsystem::up() {
+    _piston.set(true);
 }
 
-// Constructor for the goal grabbing system
-GoalGrabber::GoalGrabber(digital_out& goalGrabberPiston) : _goalGrabberPiston(goalGrabberPiston) {}
-
-// Hold the goal
-void GoalGrabber::hold() {
-    _goalGrabberPiston.set(false);
-}
-
-// Release the goal
-void GoalGrabber::release() {
-    _goalGrabberPiston.set(true);
-}
-
-// Constructor for the hook system
-Hook::Hook(digital_out& hookPiston) : _hookPiston(hookPiston) {}
-
-// Pull the hook
-void Hook::pull() {
-    _hookPiston.set(true);
-}
-
-// Push the hook
-void Hook::push() {
-    _hookPiston.set(false);
+void DescoreSubsystem::down() {
+    _piston.set(false);
 }

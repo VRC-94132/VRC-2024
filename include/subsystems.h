@@ -3,49 +3,26 @@
 
 #include "vex.h"
 
-// class for the conveyor belt / wheel system
-class Conveyor {
+// class for the main subsystem
+class ScoringSubsystem {
 private:
-    vex::motor_group& _conveyorMotor;
-
+    vex::motor &_motor1;
+    vex::motor &_motor2;
 public:
-    Conveyor(vex::motor_group& conveyorMotor);
-    void up(int speed);
-    void down(int speed);
+    ScoringSubsystem(vex::motor &motor1, vex::motor &motor2);
+    void system_default();
+    void intake();
+    void eject();
 };
 
-// class for the intake wheel system
-class Intake {
+// class for the descore subsystem
+class DescoreSubsystem {
 private:
-    vex::motor& _intakeMotorA;
-    vex::motor& _intakeMotorB;
-
+    vex::digital_out &_piston;
 public:
-    Intake(vex::motor& intakeMotorA, vex::motor& intakeMotorB);
-    void in(int speed);
-    void out(int speed);
-};
-
-// class for the goal grabbing system
-class GoalGrabber {
-private:
-    vex::digital_out& _goalGrabberPiston;
-
-public:
-    GoalGrabber(vex::digital_out& goalGrabberPiston);
-    void hold();
-    void release();
-};
-
-// class for the hook system
-class Hook {
-private:
-    vex::digital_out& _hookPiston;
-
-public:
-    Hook(vex::digital_out& hookPiston);
-    void pull();
-    void push();
+    DescoreSubsystem(vex::digital_out &piston);
+    void up();
+    void down();
 };
 
 #endif // SUBSYSTEMS_H
