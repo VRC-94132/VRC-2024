@@ -23,7 +23,7 @@ namespace patch
 // instantiate the components
 Display display;
 RDrivetrain driveSystem(leftMotors, rightMotors, smartDrivetrain);
-ScoringSubsystem scoringSubsystem(subsystemMotor1, subsystemMotor2);
+ScoringSubsystem scoringSubsystem(subsystemMotor1, miniMotor1, miniMotor2);
 DescoreSubsystem descoreSubsystem(descorePiston);
 
 competition Competition;
@@ -163,38 +163,27 @@ void handleProgrammingMode(void) {
 void userctl(void) {
     display.setUIScreenID(3);
 
-    int scoreSubsysStatus = 0;   // 0=default; 1=intake; 2=low; 3=mid; 4=high
-    int descoreSubsysStatus = 0; // 0=default; 1=up; 2=down
+    int descoreSubsysStatus = 0; // 0 = down, 1 = up
 
-    while (true)
-    {
-        // program mode
-        //if (Controller.ButtonL2.pressing() && false) {
-        //    while (Controller.ButtonL2.pressing()) { wait(20, msec); }
-        //    handleProgrammingMode();
-        //}
-
+    while (true) {
+        // --- DRIVE CONTROL ---
         int forward = Controller.Axis3.position();
-        int turn = Controller.Axis1.position()*0.5;
-        
+        int turn    = Controller.Axis1.position();
+
+        // Reverse controls while holding L1
         if (Controller.ButtonL1.pressing()) {
-            forward = forward*-1;
+            forward = -forward; 
         }
 
-        int leftSpeed = forward + turn*2;
-        int rightSpeed = forward - turn*2;
+        int leftSpeed  = forward + turn * 0.5;
+        int rightSpeed = forward - turn * 0.5;
 
-        // underclock
-        leftSpeed *= 0.7;
+        leftSpeed  *= 0.7;
         rightSpeed *= 0.7;
+        if (forward < 0) rightSpeed *= 0.9;
 
-        if (forward < 0) {
-            rightSpeed*0.9;
-        }
-
-        // set display
         display.setMotorPanel(leftSpeed, rightSpeed);
-        
+
         if (leftSpeed == 0 && rightSpeed == 0) {
             driveSystem.rbrake(false);
         } else {
@@ -205,46 +194,41 @@ void userctl(void) {
             }
         }
 
-        // set scoring subsystem status
+        // --- SCORING SUBSYSTEM ---
         if (Controller.ButtonB.pressing()) {
-            while (Controller.ButtonB.pressing()) { wait(20, msec); }
-            if (scoreSubsysStatus != -1) {scoreSubsysStatus = -1;} else {scoreSubsysStatus = 0;}
+            // Eject: all motors reverse
+            scoringSubsystem.eject();
         }
-        else if (Controller.ButtonX.pressing()) {
-            while (Controller.ButtonX.pressing()) { wait(20, msec); }
-            if (scoreSubsysStatus != 1) {scoreSubsysStatus = 1;} else {scoreSubsysStatus = 0;}
+        else if (Controller.ButtonR1.pressing() && !Controller.ButtonR2.pressing()) {
+            // Score top: main + top mini
+            scoringSubsystem.intakeTop();
         }
-        
-        // set motion
-        switch (scoreSubsysStatus) {
-            case 1:
-                scoringSubsystem.intake();
-                break;
-            case -1:
-                scoringSubsystem.eject();
-                break;
-            default:
-                scoringSubsystem.system_default();
-                break;
+        else if (Controller.ButtonR2.pressing() && !Controller.ButtonR1.pressing()) {
+            // Score middle: main + middle mini
+            scoringSubsystem.intakeMiddle();
+        }
+        else {
+            // Stop all scoring motors
+            scoringSubsystem.system_default();
         }
 
-        // set descore subsystem status
-        if (Controller.ButtonR2.pressing()) {
-            while (Controller.ButtonR2.pressing()) { wait(20, msec); }
+        // --- DESCORE SUBSYSTEM ---
+        if (Controller.ButtonL2.pressing()) { // toggle piston
+            while (Controller.ButtonL2.pressing()) { wait(20, msec); }
             descoreSubsysStatus = (descoreSubsysStatus == 1) ? 0 : 1;
         }
 
-        // set motion
-        switch (descoreSubsysStatus) {
-            case 1:
-                descoreSubsystem.up();
-                break;
-            default:
-                descoreSubsystem.down();
-                break;
+        if (descoreSubsysStatus == 1) {
+            descoreSubsystem.up();
+        } else {
+            descoreSubsystem.down();
         }
+
+        wait(20, msec);
     }
 }
+
+
 
 // op executor
 

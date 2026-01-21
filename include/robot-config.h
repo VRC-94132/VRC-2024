@@ -16,11 +16,13 @@ extern vex::motor_group rightMotors;
 
 extern vex::smartdrive smartDrivetrain;   // the drivetrain
 
-// other devices
-extern vex::motor subsystemMotor1;
-extern vex::motor subsystemMotor2;
+// scoring subsystem motors
+extern vex::motor subsystemMotor1;  // main scoring motor
+extern vex::motor miniMotor1;       // secondary scoring motor
+extern vex::motor miniMotor2;       // tertiary scoring motor
 
 // piston
 extern vex::digital_out descorePiston;
 
-void  hwInit( void );
+// hardware init
+void hwInit(void);
