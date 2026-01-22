@@ -32,7 +32,7 @@ motor_group rightMotors(rightMotorA, rightMotorB, rightMotorC);
 digital_out descorePiston(Brain.ThreeWirePort.A);
 
 // Smartdrive setup
-smartdrive smartDrivetrain(leftMotors, rightMotors, brainInertial, 320, 325, 240, mm, 2.33);
+smartdrive smartDrivetrain(leftMotors, rightMotors, brainInertial, 260, 333, 354, mm, 48/36);
 
 // Initialize hardware
 void hwInit(void) {

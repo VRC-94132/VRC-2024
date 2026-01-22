@@ -20,86 +20,13 @@ namespace patch
     }
 }
 
-inline float clampf(float x, float lo, float hi)
+float clampf(float x, float lo, float hi)
 {
     if (x < lo) return lo;
     if (x > hi) return hi;
     return x;
 }
 
-inline float pidDriveSpeed(float targetSpeed, float measuredSpeed)
-{
-    // ---- Constants (starting points; tune on your robot) ----
-    constexpr float dt = 0.01f;   // 100 Hz
-
-    constexpr float kP = 0.9f;
-    constexpr float kI = 0.25f;   // per second effect via integral*dt
-    constexpr float kD = 0.06f;
-
-    constexpr float outMin = -100.0f;
-    constexpr float outMax =  100.0f;
-
-    // Integral clamp (anti-windup)
-    constexpr float iMin = -180.0f;
-    constexpr float iMax =  180.0f;
-
-    // Derivative filter: bigger = smoother D (less noise), smaller = snappier D
-    // This is a simple 1st-order IIR on the derivative term.
-    constexpr float dFilterAlpha = 0.85f; // 0..1 (0=no filter, 0.85 is pretty chill)
-
-    // Optional: output slew limit for smoother accel (set <=0 to disable)
-    constexpr float maxSlewPerSec = 400.0f; // speed units per second
-
-    // ---- Persistent state ----
-    static float integral = 0.0f;
-    static float prevError = 0.0f;
-    static float dFiltered = 0.0f;
-    static float prevOut = 0.0f;
-    static bool initialized = false;
-
-    const float error = targetSpeed - measuredSpeed;
-
-    if (!initialized) {
-        prevError = error;
-        prevOut = measuredSpeed; // or 0.0f, depending on your preference
-        dFiltered = 0.0f;
-        initialized = true;
-    }
-
-    // Derivative on error (then filtered)
-    const float dRaw = (error - prevError) / dt;
-    dFiltered = dFilterAlpha * dFiltered + (1.0f - dFilterAlpha) * dRaw;
-
-    // Proportional + derivative parts
-    float output = (kP * error) + (kD * dFiltered);
-
-    // Anti-windup: integrate only if not saturated OR if integration would help unsaturate
-    const bool satHigh = (output >= outMax);
-    const bool satLow  = (output <= outMin);
-
-    const bool pushingFurtherHigh = satHigh && (error > 0.0f);
-    const bool pushingFurtherLow  = satLow  && (error < 0.0f);
-
-    if (!(pushingFurtherHigh || pushingFurtherLow)) {
-        integral += error * dt;
-        integral = clampf(integral, iMin, iMax);
-    }
-
-    output += kI * integral;
-
-    // Slew limit (optional)
-    if (maxSlewPerSec > 0.0f) {
-        const float maxStep = maxSlewPerSec * dt;
-        output = clampf(output, prevOut - maxStep, prevOut + maxStep);
-    }
-
-    // Clamp to [-100, 100]
-    output = clampf(output, outMin, outMax);
-
-    prevError = error;
-    prevOut = output;
-    return output;
-}
 
 // instantiate the components
 Display display;
@@ -253,8 +180,8 @@ void userctl(void) {
             forward = -forward; 
         }
 
-        forward *= 0.5; // reduce forward speed to 50%
-        turn *= 0.5;    // reduce turn speed to 50%
+        forward *= 1; // reduce forward speed to 50%
+        turn *= 0.6;    // reduce turn speed to 50%
 
         // compute the target velocities. if current is greater than target, turn reverse.
         // 100% = 600 rpm
@@ -268,7 +195,7 @@ void userctl(void) {
         float rightVelocityCurrent = rightMotors.velocity(rpm);
 
         // compute final speeds to reach target velocities
-        float correctionFactor = 0.3; // tuning factor
+        float correctionFactor = 0.1; // tuning factor
         float leftSpeed = leftVelocityTarget + ((leftVelocityTarget - leftVelocityCurrent) * correctionFactor);
         float rightSpeed = rightVelocityTarget + ((rightVelocityTarget - rightVelocityCurrent) * correctionFactor);
 
@@ -448,19 +375,36 @@ void autonomous(void) {
     // C-(status:int 1=up 2=down 0=off)
     // W-(time:int)
 
-    // backup and then clear field
-    //execOperations("M-1-40-40 W-10 M-2-100-150");
-    //execOperations("M-2-60-90");
+    // speed: percentage
+    // distance: mm
 
-    // score 1st point, head to second, score
-    //execOperations("C-1 M-2-5-3 M-4-5-10 C-0 I-1 M-1-5-11 I-0 C-1 M-3-5-2 W-5 C-0");
-    
-    // hit the high stake
-    //execOperations("M-2-5-17");
-    // move to 3rd AINT DOING THIS SHIT NO MORE
-    // execOperations("M-3-5-20 I-1 M-1-4-22 I-0 C-1 M-3-4-17 C-0");
+    // AVOID MOVING BACKWARDS, IT'S VERY INACCURATE
 
-    execOperations("M-1-80-1000 W-1000 M-3-80-90 W-1000 M-1-80-1000 W-1000 M-3-80-90 W-1000 M-1-80-1000 W-1000 M-3-80-90 W-1000 M-1-80-1000 W-1000 M-3-80-90 W-1000");
+    execOperations("M-1-50-2700");
+    execOperations("M-4-20-90");
+    // execOperations("M-1-50-150");
+    // //matchload 3 red
+    // execOperations("W-1000");
+    // execOperations("M-2-50-150");
+    // execOperations("M-3-20-90");
+    // //eject 3 red
+    // execOperations("M-4-20-90");
+    // execOperations("M-1-50-150");
+    // //matchload 3 blue
+    // execOperations("W-1000");
+    // execOperations("M-2-50-150");
+    // execOperations("M-1-50-150");
+    // //long 3 blue
+    // execOperations("W-1000");
+    // execOperations("M-1-50-150");
+    // execOperations("M-4-20-135");
+    // //open intake
+    // execOperations("M-1-50-750");
+    // //close intake
+    // execOperations("M-1-50-600");
+    //center upper: 3 blue
+
+    //execOperations("M-1-80-1000 W-1000 M-3-80-90 W-1000 M-1-80-1000 W-1000 M-3-80-90 W-1000 M-1-80-1000 W-1000 M-3-80-90 W-1000 M-1-80-1000 W-1000 M-3-80-90 W-1000");
 }
 
 // pre-autonomous function
