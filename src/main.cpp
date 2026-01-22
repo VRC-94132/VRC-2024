@@ -20,6 +20,87 @@ namespace patch
     }
 }
 
+inline float clampf(float x, float lo, float hi)
+{
+    if (x < lo) return lo;
+    if (x > hi) return hi;
+    return x;
+}
+
+inline float pidDriveSpeed(float targetSpeed, float measuredSpeed)
+{
+    // ---- Constants (starting points; tune on your robot) ----
+    constexpr float dt = 0.01f;   // 100 Hz
+
+    constexpr float kP = 0.9f;
+    constexpr float kI = 0.25f;   // per second effect via integral*dt
+    constexpr float kD = 0.06f;
+
+    constexpr float outMin = -100.0f;
+    constexpr float outMax =  100.0f;
+
+    // Integral clamp (anti-windup)
+    constexpr float iMin = -180.0f;
+    constexpr float iMax =  180.0f;
+
+    // Derivative filter: bigger = smoother D (less noise), smaller = snappier D
+    // This is a simple 1st-order IIR on the derivative term.
+    constexpr float dFilterAlpha = 0.85f; // 0..1 (0=no filter, 0.85 is pretty chill)
+
+    // Optional: output slew limit for smoother accel (set <=0 to disable)
+    constexpr float maxSlewPerSec = 400.0f; // speed units per second
+
+    // ---- Persistent state ----
+    static float integral = 0.0f;
+    static float prevError = 0.0f;
+    static float dFiltered = 0.0f;
+    static float prevOut = 0.0f;
+    static bool initialized = false;
+
+    const float error = targetSpeed - measuredSpeed;
+
+    if (!initialized) {
+        prevError = error;
+        prevOut = measuredSpeed; // or 0.0f, depending on your preference
+        dFiltered = 0.0f;
+        initialized = true;
+    }
+
+    // Derivative on error (then filtered)
+    const float dRaw = (error - prevError) / dt;
+    dFiltered = dFilterAlpha * dFiltered + (1.0f - dFilterAlpha) * dRaw;
+
+    // Proportional + derivative parts
+    float output = (kP * error) + (kD * dFiltered);
+
+    // Anti-windup: integrate only if not saturated OR if integration would help unsaturate
+    const bool satHigh = (output >= outMax);
+    const bool satLow  = (output <= outMin);
+
+    const bool pushingFurtherHigh = satHigh && (error > 0.0f);
+    const bool pushingFurtherLow  = satLow  && (error < 0.0f);
+
+    if (!(pushingFurtherHigh || pushingFurtherLow)) {
+        integral += error * dt;
+        integral = clampf(integral, iMin, iMax);
+    }
+
+    output += kI * integral;
+
+    // Slew limit (optional)
+    if (maxSlewPerSec > 0.0f) {
+        const float maxStep = maxSlewPerSec * dt;
+        output = clampf(output, prevOut - maxStep, prevOut + maxStep);
+    }
+
+    // Clamp to [-100, 100]
+    output = clampf(output, outMin, outMax);
+
+    prevError = error;
+    prevOut = output;
+    return output;
+}
+
 // instantiate the components
 Display display;
 RDrivetrain driveSystem(leftMotors, rightMotors, smartDrivetrain);
@@ -149,9 +230,6 @@ void handleProgrammingMode(void) {
                     break;
             }
 
-            driveSystem.rmove(0, 0);
-            driveSystem.rbrake(false);
-
             //Controller.Screen.clearScreen();
             //Controller.Screen.setCursor(2,0);
             //Controller.Screen.print("PROG MODE");
@@ -167,32 +245,34 @@ void userctl(void) {
 
     while (true) {
         // --- DRIVE CONTROL ---
-        int forward = Controller.Axis3.position();
-        int turn    = Controller.Axis1.position();
+        float forward = Controller.Axis3.position();
+        float turn    = Controller.Axis1.position();
 
         // Reverse controls while holding L1
         if (Controller.ButtonL1.pressing()) {
             forward = -forward; 
         }
 
-        int leftSpeed  = forward + turn * 0.5;
-        int rightSpeed = forward - turn * 0.5;
+        forward *= 0.5; // reduce forward speed to 50%
+        turn *= 0.5;    // reduce turn speed to 50%
 
-        leftSpeed  *= 0.7;
-        rightSpeed *= 0.7;
-        if (forward < 0) rightSpeed *= 0.9;
+        // compute the target velocities. if current is greater than target, turn reverse.
+        // 100% = 600 rpm
 
-        display.setMotorPanel(leftSpeed, rightSpeed);
+        float leftVelocityTarget = ((forward + turn) / 100) * 600;
+        float rightVelocityTarget = ((forward - turn) / 100) * 600;
+        Brain.Screen.printAt(1, 20, "LVT:%f RVT:%f    ", leftVelocityTarget, rightVelocityTarget);
 
-        if (leftSpeed == 0 && rightSpeed == 0) {
-            driveSystem.rbrake(false);
-        } else {
-            if (turn == 0) {
-                driveSystem.rmovestraight(forward);
-            } else {
-                driveSystem.rmove(leftSpeed, rightSpeed);
-            }
-        }
+        // read current velocities
+        float leftVelocityCurrent = leftMotors.velocity(rpm);
+        float rightVelocityCurrent = rightMotors.velocity(rpm);
+
+        // compute final speeds to reach target velocities
+        float correctionFactor = 0.3; // tuning factor
+        float leftSpeed = leftVelocityTarget + ((leftVelocityTarget - leftVelocityCurrent) * correctionFactor);
+        float rightSpeed = rightVelocityTarget + ((rightVelocityTarget - rightVelocityCurrent) * correctionFactor);
+
+        driveSystem.rdrivedirect(leftSpeed, rightSpeed);
 
         // --- SCORING SUBSYSTEM ---
         if (Controller.ButtonB.pressing()) {
@@ -293,16 +373,16 @@ void execOperations(const std::string& input) {
                     // move
                     switch (moveCode) {
                         case 1: // fwd +dist
-                            driveSystem.rmovesmart(dist*50, speed*20);
+                            driveSystem.rmovesmart(dist, speed);
                             break;
                         case 2: // bwd -dist
-                            driveSystem.rmovesmart(-dist*50, speed*20);
+                            driveSystem.rmovesmart(-dist, speed);
                             break;
                         case 3: // turn right +
-                            driveSystem.rturnsmart(dist*5, speed*20);
+                            driveSystem.rturnsmart(dist, speed);
                             break;
                         case 4: // turn left -
-                            driveSystem.rturnsmart(-dist*5, speed*20);
+                            driveSystem.rturnsmart(-dist, speed);
                             break;
                     }
                 }
@@ -349,7 +429,7 @@ void execOperations(const std::string& input) {
                     std::string output = "OP: Wait " + patch::to_string(time);
                     display.printSystemLog(output.c_str());
 
-                    wait(time*100, vex::msec);
+                    wait(time, vex::msec);
                 }
                 break;
             }
@@ -363,10 +443,10 @@ void autonomous(void) {
     //return;
 
     // G-(status:int 0=on 1=off)
-    // M-(movecode:int 1=fwd 2=bwd 3=rwd 4=lwd)-(speed:int *20)-(dist:int *50 or *5)
+    // M-(movecode:int 1=fwd 2=bwd 3=rwd 4=lwd)-(speed:int)-(dist:int)
     // I-(status:int 1=in 2=out 0=off)
     // C-(status:int 1=up 2=down 0=off)
-    // W-(time:int *100)
+    // W-(time:int)
 
     // backup and then clear field
     //execOperations("M-1-40-40 W-10 M-2-100-150");
@@ -380,7 +460,7 @@ void autonomous(void) {
     // move to 3rd AINT DOING THIS SHIT NO MORE
     // execOperations("M-3-5-20 I-1 M-1-4-22 I-0 C-1 M-3-4-17 C-0");
 
-    //execOperations("G-1 M-1-3-4 G-0");
+    execOperations("M-1-80-1000 W-1000 M-3-80-90 W-1000 M-1-80-1000 W-1000 M-3-80-90 W-1000 M-1-80-1000 W-1000 M-3-80-90 W-1000 M-1-80-1000 W-1000 M-3-80-90 W-1000");
 }
 
 // pre-autonomous function
@@ -400,6 +480,6 @@ int main() {
     // Prevent main from exiting with an infinite loop
 
     while (true) {
-        wait(100, msec);
+        wait(10, msec);
     }
 }

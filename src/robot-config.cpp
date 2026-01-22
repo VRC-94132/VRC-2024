@@ -57,8 +57,6 @@ void hwInit(void) {
         display.printSystemLog("#: Reading data");
         wait(100, msec);
     }
-    smartDrivetrain.setTurnVelocity(100, vex::percentUnits::pct);
-    smartDrivetrain.setTurnConstant(1);
     display.printSystemLog("Drivetrain system ready!");
     display.printSystemLog("");
 

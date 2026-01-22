@@ -10,21 +10,19 @@ RDrivetrain::RDrivetrain(motor_group& leftMotorsGroup, motor_group& rightMotorsG
 }
 
 // Move the robot
-void RDrivetrain::rmove(int leftSpeed, int rightSpeed) {
-    _leftMotors.spin(forward, leftSpeed, pct);
-    _rightMotors.spin(forward, rightSpeed, pct);
-}
-
-void RDrivetrain::rmovestraight(int speed) {
-    _drivetrain.drive(forward, speed*10, rpm);
+void RDrivetrain::rdrivedirect(int leftSpeed, int rightSpeed) {
+    _leftMotors.setVelocity(leftSpeed, velocityUnits::rpm);
+    _rightMotors.setVelocity(rightSpeed, velocityUnits::rpm);
+    _leftMotors.spin(forward);
+    _rightMotors.spin(forward);
 }
 
 void RDrivetrain::rmovesmart(int movement, int speed) {
-    _drivetrain.driveFor(movement, vex::mm, speed, vex::rpm);
+    _drivetrain.driveFor(movement, vex::mm, speed, velocityUnits::pct);
 }
 
 void RDrivetrain::rturnsmart(int angle, int speed) {
-    _drivetrain.turnFor(angle, vex::degrees, speed, vex::rpm);
+    _drivetrain.turnFor(angle, vex::degrees, speed, velocityUnits::pct);
 }
 
 // Brake the robot
