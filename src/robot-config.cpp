@@ -12,7 +12,7 @@ inertial brainInertial(PORT4);
 // Drivetrain - Left side
 motor leftMotorA(PORT3, ratio6_1, true);
 motor leftMotorB(PORT2, ratio6_1, true);
-motor leftMotorC(PORT1, ratio6_1, true);  // ← flipped
+motor leftMotorC(PORT7, ratio6_1, true);  // ← flipped
 
 // Drivetrain - Right side
 motor rightMotorA(PORT13, ratio6_1, false);
