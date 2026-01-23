@@ -237,6 +237,15 @@ void handleProgrammingMode(void) {
     }
 }
 
+void writeToLog(const std::string& message) {
+    // write with newline at end
+    if (Brain.SDcard.isInserted()) {
+        Brain.SDcard.appendfile("system_log.txt", (uint8_t*)message.c_str(), message.length());
+    } else {
+        Brain.Screen.printAt(1, 40, "sd card not inserted");
+    }
+}
+
 // user control function
 void userctl(void) {
     display.setUIScreenID(3);
@@ -253,26 +262,52 @@ void userctl(void) {
             forward = -forward; 
         }
 
-        forward *= 0.5; // reduce forward speed to 50%
-        turn *= 0.5;    // reduce turn speed to 50%
+        forward *= 0.6; // reduce forward speed to 50%
+        turn *= 0.35;    // reduce turn speed to 50%
 
         // compute the target velocities. if current is greater than target, turn reverse.
         // 100% = 600 rpm
 
-        float leftVelocityTarget = ((forward + turn) / 100) * 600;
-        float rightVelocityTarget = ((forward - turn) / 100) * 600;
+        float leftVelocityTarget = (forward + turn); // / 100) * 100;
+        float rightVelocityTarget = (forward - turn); // / 100) * 100;
         Brain.Screen.printAt(1, 20, "LVT:%f RVT:%f    ", leftVelocityTarget, rightVelocityTarget);
 
         // read current velocities
-        float leftVelocityCurrent = leftMotors.velocity(rpm);
+        float leftVelocityCurrent  = leftMotors.velocity(rpm);
         float rightVelocityCurrent = rightMotors.velocity(rpm);
 
-        // compute final speeds to reach target velocities
-        float correctionFactor = 0.3; // tuning factor
-        float leftSpeed = leftVelocityTarget + ((leftVelocityTarget - leftVelocityCurrent) * correctionFactor);
-        float rightSpeed = rightVelocityTarget + ((rightVelocityTarget - rightVelocityCurrent) * correctionFactor);
+        uint32_t timeNow = Brain.Timer.system();
 
-        driveSystem.rdrivedirect(leftSpeed, rightSpeed);
+        writeToLog("Time: " + patch::to_string(timeNow) + " LVT:" + patch::to_string(leftVelocityTarget) + " RVT:" + patch::to_string(rightVelocityTarget) + "\n");
+        writeToLog("Time: " + patch::to_string(timeNow) + " LVC:" + patch::to_string(leftVelocityCurrent) + " RVC:" + patch::to_string(rightVelocityCurrent) + "\n");
+
+        /*
+        // tuning factor
+        float correctionFactor = 0.01f;
+
+        // apply correction only if moving toward target reduces magnitude (closer to 0)
+        float leftSpeed;
+        if (abs(leftVelocityTarget) <= 30) {
+            leftSpeed = leftVelocityTarget
+                    + (leftVelocityTarget - leftVelocityCurrent) * correctionFactor;
+            writeToLog("Time: " + patch::to_string(timeNow) + " LSP CORR:" + patch::to_string(leftSpeed) + "\n");
+            writeToLog("Time: " + patch::to_string(timeNow) + " LSP RAW :" + patch::to_string((leftVelocityTarget - leftVelocityCurrent) * correctionFactor) + "\n");
+        } else {
+            leftSpeed = leftVelocityTarget;
+        }
+
+        float rightSpeed;
+        if (abs(rightVelocityTarget) <= 30) {
+            rightSpeed = rightVelocityTarget
+                    + (rightVelocityTarget - rightVelocityCurrent) * correctionFactor;
+            writeToLog("Time: " + patch::to_string(timeNow) + " RSP CORR:" + patch::to_string(rightSpeed) + "\n");
+            writeToLog("Time: " + patch::to_string(timeNow) + " RSP RAW :" + patch::to_string((rightVelocityTarget - rightVelocityCurrent) * correctionFactor) + "\n");
+        } else {
+            rightSpeed = rightVelocityTarget;
+        }
+            */
+
+        driveSystem.rdrivedirect(leftVelocityTarget, rightVelocityTarget);
 
         // --- SCORING SUBSYSTEM ---
         if (Controller.ButtonB.pressing()) {

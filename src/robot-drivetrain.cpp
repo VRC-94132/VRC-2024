@@ -11,8 +11,8 @@ RDrivetrain::RDrivetrain(motor_group& leftMotorsGroup, motor_group& rightMotorsG
 
 // Move the robot
 void RDrivetrain::rdrivedirect(int leftSpeed, int rightSpeed) {
-    _leftMotors.setVelocity(leftSpeed, velocityUnits::rpm);
-    _rightMotors.setVelocity(rightSpeed, velocityUnits::rpm);
+    _leftMotors.setVelocity(leftSpeed, velocityUnits::pct);
+    _rightMotors.setVelocity(rightSpeed, velocityUnits::pct);
     _leftMotors.spin(forward);
     _rightMotors.spin(forward);
 }
