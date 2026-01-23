@@ -180,8 +180,8 @@ void userctl(void) {
             forward = -forward; 
         }
 
-        forward *= 1; // reduce forward speed to 50%
-        turn *= 0.6;    // reduce turn speed to 50%
+        forward *= 0.6; // reduce forward speed to 50%
+        turn *= 0.4;    // reduce turn speed to 50%
 
         // compute the target velocities. if current is greater than target, turn reverse.
         // 100% = 600 rpm
@@ -315,36 +315,19 @@ void execOperations(const std::string& input) {
                 }
                 break;
             }
-            case 'I': {
-                // I-(status:int)   # intake
+            case 'S': {
+                // S-(status:int)   # scoring
                 if (operation.params.size() == 1) {
                     int status = operation.params[0];
-                    std::string output = "OP: Intake Set " + patch::to_string(status);
+                    std::string output = "OP: Scoring Set " + patch::to_string(status);
                     display.printSystemLog(output.c_str());
 
                     if (status == 1) {
-                        //intakeSystem.in(100);
+                        scoringSubsystem.intakeTop();
                     } else if (status == 2) {
-                        //intakeSystem.out(100);
+                        scoringSubsystem.intakeMiddle();
                     } else {
-                        //intakeSystem.in(0);
-                    }
-                }
-                break;
-            }
-            case 'C': {
-                // C-(status:int)   # conveyor
-                if (operation.params.size() == 1) {
-                    int status = operation.params[0];
-                    std::string output = "OP: Conveyor Set " + patch::to_string(status);
-                    display.printSystemLog(output.c_str());
-
-                    if (status == 1) {
-                        //conveyorSystem.up(100);
-                    } else if (status == 2) {
-                        //conveyorSystem.down(100);
-                    } else {
-                        //conveyorSystem.up(0);
+                        scoringSubsystem.system_default();
                     }
                 }
                 break;
@@ -371,8 +354,7 @@ void autonomous(void) {
 
     // G-(status:int 0=on 1=off)
     // M-(movecode:int 1=fwd 2=bwd 3=rwd 4=lwd)-(speed:int)-(dist:int)
-    // I-(status:int 1=in 2=out 0=off)
-    // C-(status:int 1=up 2=down 0=off)
+    // S-(status:int 1=top 2=mid 0=off)
     // W-(time:int)
 
     // speed: percentage
@@ -380,24 +362,44 @@ void autonomous(void) {
 
     // AVOID MOVING BACKWARDS, IT'S VERY INACCURATE
 
-    execOperations("M-1-50-2700");
-    execOperations("M-4-20-90");
-    // execOperations("M-1-50-150");
-    // //matchload 3 red
+    execOperations("M-1-30-1000");
+    // execOperations("W-500");
+    execOperations("M-4-10-90");
     // execOperations("W-1000");
-    // execOperations("M-2-50-150");
-    // execOperations("M-3-20-90");
-    // //eject 3 red
+    
+    // execOperations("M-1-50-150");
+    //matchload 3 red
+    // unimplemented
+
+    // execOperations("W-1000");
+    execOperations("M-2-20-750");
+
+    execOperations("S-1"); //long 3 red
+    execOperations("W-2000");
+    execOperations("S-0");
+
+    execOperations("M-1-50-500");
+    //matchload 3 blue
+    // execOperations("W-3000");
+    // execOperations("S-0");
+    
     // execOperations("M-4-20-90");
-    // execOperations("M-1-50-150");
-    // //matchload 3 blue
-    // execOperations("W-1000");
-    // execOperations("M-2-50-150");
-    // execOperations("M-1-50-150");
-    // //long 3 blue
-    // execOperations("W-1000");
-    // execOperations("M-1-50-150");
-    // execOperations("M-4-20-135");
+    
+    execOperations("M-1-50-150");
+    execOperations("M-3-50-55");
+    execOperations("W-1000");
+    
+    execOperations("M-4-10-180");
+    
+    execOperations("S-1");
+    execOperations("M-1-50-1000");
+    execOperations("S-0");
+    
+    execOperations("M-4-10-180");
+    execOperations("M-2-50-800");
+    execOperations("S-1");
+
+    
     // //open intake
     // execOperations("M-1-50-750");
     // //close intake
