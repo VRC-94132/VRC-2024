@@ -189,8 +189,8 @@ void userctl(void) {
             forward = -forward; 
         }
 
-        forward *= 0.5; // reduce forward speed to 50%
-        turn *= 0.5;    // reduce turn speed to 50%
+        forward *= 0.6; // reduce forward speed to 50%
+        turn *= 0.35;    // reduce turn speed to 50%
 
         // compute the target velocities. if current is greater than target, turn reverse.
         // 100% = 600 rpm
