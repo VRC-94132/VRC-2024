@@ -1,4 +1,4 @@
-#include "vex.h"    // includes the VEX library & the robot configuration
+#include "vex.h"
 #include "subsystems.h"
 #include "robot-drivetrain.h"
 #include "robot-config.h"
@@ -10,362 +10,173 @@
 
 using namespace vex;
 
+// =======================
+// Patched uwu to_string OwO
+// =======================
 namespace patch
 {
     template < typename T > std::string to_string( const T& n )
     {
         std::ostringstream stm ;
         stm << n ;
-        return stm.str() ;
+        return stm.str(); // convewts nyumbews to stwingies uwu x3
     }
 }
 
-// instantiate the components
-Display display;
-RDrivetrain driveSystem(leftMotors, rightMotors, smartDrivetrain);
-ScoringSubsystem scoringSubsystem(subsystemMotor1, subsystemMotor2);
-DescoreSubsystem descoreSubsystem(descorePiston);
+// =======================
+// Instantiate Components UwU
+// =======================
+Display display; // wittle scweeny dispwayy >w<
+RDrivetrain driveSystem(leftMotors, rightMotors, smartDrivetrain); // vwoom vwoom spinny wheels nya~ 
 
-competition Competition;
+// Mini motows fow scoowy subsystem >w<
+ScoringSubsystem scoringSubsystem(miniMotor1, miniMotor2, subsystemMotor1); // top, middy, bottowm UwU
 
-void handleProgrammingMode(void) {
-    int opCommand = 0;
-    // 0=no op; 1=fwd; 2=bwd; 3=turnleft; 4=turnright;
-    int opUnit = 1;
-    // 1 unit = 0.1 sec
-    int opPower = 1;
-    // 1 power = 20%
+DescoreSubsystem descoreSubsystem(descorePiston); // pistowny owo
 
-    Controller.Screen.clearScreen();
-    Controller.Screen.setCursor(0,0);
-    Controller.Screen.print("PROG MODE");
+competition Competition; // compwetition mode nya~ OwO
+
+// =======================
+// User Contwow UwU
+// =======================
+void userctl(void) {
+    display.setUIScreenID(3); // show motow pawnew owo
+
+    int descoreSubsysStatus = 0; // 0 = down, 1 = up UwU
 
     while (true) {
-        // exit prog mode
-        if (Controller.ButtonL2.pressing()) {
-            while (Controller.ButtonL2.pressing()) { wait(20, msec); }
-            Controller.Screen.clearScreen();
-        Controller.Screen.setCursor(0,0);
-        Controller.Screen.print("DRIVE MODE");
-            return;
-        }
+        // --- DRIVE CONTWOw >w<
+        int forward = Controller.Axis3.position(); // fowwawd/back contwowws >.<
+        int turn    = Controller.Axis1.position(); // tuwny wight/left contwowws nya~
 
-        // set operation mode
-        if (true) {
-            bool doScreenUpd = false;
-
-            // fwd
-            if (Controller.ButtonX.pressing()) {
-                while (Controller.ButtonX.pressing()) { wait(20, msec); }
-                opCommand = 1;
-                doScreenUpd = true;
-            }
-            // bwd
-            else if (Controller.ButtonB.pressing()) {
-                while (Controller.ButtonB.pressing()) { wait(20, msec); }
-                opCommand = 2;
-                doScreenUpd = true;
-            }
-            // turn left
-            else if (Controller.ButtonY.pressing()) {
-                while (Controller.ButtonY.pressing()) { wait(20, msec); }
-                opCommand = 3;
-                doScreenUpd = true;
-            }
-            // turn right
-            else if (Controller.ButtonA.pressing()) {
-                while (Controller.ButtonA.pressing()) { wait(20, msec); }
-                opCommand = 4;
-                doScreenUpd = true;
-            }
-
-            if (doScreenUpd) {
-                Controller.Screen.setCursor(1,0);
-                Controller.Screen.print("OP CODE SET: ");
-                Controller.Screen.setCursor(1,14);
-                Controller.Screen.print(opCommand);
-            }
-        }
-
-        bool doScreenUpd = false;
-
-        // set power and unit
-        // ++ power
-        if (Controller.ButtonUp.pressing()) {
-            while (Controller.ButtonUp.pressing()) { wait(20, msec); }
-            opPower += 1;
-            doScreenUpd = true;
-        }
-        // -- power
-        else if (Controller.ButtonDown.pressing()) {
-            while (Controller.ButtonDown.pressing()) { wait(20, msec); }
-            opPower -= 1;
-            doScreenUpd = true;
-        }
-        // ++ unit
-        else if (Controller.ButtonLeft.pressing()) {
-            while (Controller.ButtonLeft.pressing()) { wait(20, msec); }
-            opUnit += 1;
-            doScreenUpd = true;
-        }
-        // -- unit
-        else if (Controller.ButtonRight.pressing()) {
-            while (Controller.ButtonRight.pressing()) { wait(20, msec); }
-            opUnit -= 1;
-            doScreenUpd = true;
-        }
-
-        if (doScreenUpd) {
-            Controller.Screen.clearLine(2);
-            Controller.Screen.setCursor(2,0);
-            Controller.Screen.print("OP PWR SET: ");
-            Controller.Screen.setCursor(2,14);
-            Controller.Screen.print(opPower);
-
-            Controller.Screen.clearLine(3);
-            Controller.Screen.setCursor(3,0);
-            Controller.Screen.print("OP UNT SET: ");
-            Controller.Screen.setCursor(3,14);
-            Controller.Screen.print(opUnit);
-        }
-
-        if (Controller.ButtonR2.pressing()) {
-            while (Controller.ButtonR2.pressing()) { wait(20, msec); }
-            
-            // execute
-            switch (opCommand)
-            {
-                case 1:
-                    driveSystem.rmovesmart(opUnit*50, opPower*20);
-                    break;
-                case 2:
-                    driveSystem.rmovesmart(-opUnit*50, opPower*20);
-                    break;
-                case 3:
-                    driveSystem.rturnsmart(opUnit*5, opPower*20);
-                    break;
-                case 4:
-                    driveSystem.rturnsmart(-opUnit*5, opPower*20);
-                    break;
-            }
-
-            driveSystem.rmove(0, 0);
-            driveSystem.rbrake(false);
-
-            //Controller.Screen.clearScreen();
-            //Controller.Screen.setCursor(2,0);
-            //Controller.Screen.print("PROG MODE");
-        }
-    }
-}
-
-// user control function
-void userctl(void) {
-    display.setUIScreenID(3);
-
-    int scoreSubsysStatus = 0;   // 0=default; 1=intake; 2=low; 3=mid; 4=high
-    int descoreSubsysStatus = 0; // 0=default; 1=up; 2=down
-
-    while (true)
-    {
-        // program mode
-        //if (Controller.ButtonL2.pressing() && false) {
-        //    while (Controller.ButtonL2.pressing()) { wait(20, msec); }
-        //    handleProgrammingMode();
-        //}
-
-        int forward = Controller.Axis3.position();
-        int turn = Controller.Axis1.position()*0.5;
-        
+        // Wevewse contwows if L1 pwessed OwO
         if (Controller.ButtonL1.pressing()) {
-            forward = forward*-1;
+            forward = -forward; // hehe uwu wevewse fowwawd
         }
 
-        int leftSpeed = forward + turn*2;
-        int rightSpeed = forward - turn*2;
+        int leftSpeed  = forward + turn * 0.5; // calcuwaate lewy speed >w<
+        int rightSpeed = forward - turn * 0.5; // calcuwaate wighty speed owo
 
-        // underclock
-        leftSpeed *= 0.7;
-        rightSpeed *= 0.7;
+        leftSpeed  *= 0.7; // swow down a bit nya~ 
+        rightSpeed *= 0.7; // swow down wight side too UwU
+        if (forward < 0) rightSpeed *= 0.9; // go backyy mowe cawefuw owo
 
-        if (forward < 0) {
-            rightSpeed*0.9;
-        }
+        display.setMotorPanel(leftSpeed, rightSpeed); // show w-wheels spinny UwU
 
-        // set display
-        display.setMotorPanel(leftSpeed, rightSpeed);
-        
         if (leftSpeed == 0 && rightSpeed == 0) {
-            driveSystem.rbrake(false);
+            driveSystem.rbrake(false); // stawppy wheels >w<
         } else {
             if (turn == 0) {
-                driveSystem.rmovestraight(forward);
+                driveSystem.rmovestraight(forward); // zoom fowwawd OwO
             } else {
-                driveSystem.rmove(leftSpeed, rightSpeed);
+                driveSystem.rmove(leftSpeed, rightSpeed); // tuwny tuwny spinny >w<
             }
         }
 
-        // set scoring subsystem status
+        // --- SCORING SUBSYSTEM UwU ---
         if (Controller.ButtonB.pressing()) {
-            while (Controller.ButtonB.pressing()) { wait(20, msec); }
-            if (scoreSubsysStatus != -1) {scoreSubsysStatus = -1;} else {scoreSubsysStatus = 0;}
+            scoringSubsystem.eject(); // ejecty spinny UwU
         }
-        else if (Controller.ButtonX.pressing()) {
-            while (Controller.ButtonX.pressing()) { wait(20, msec); }
-            if (scoreSubsysStatus != 1) {scoreSubsysStatus = 1;} else {scoreSubsysStatus = 0;}
+        else if (Controller.ButtonR1.pressing() && !Controller.ButtonR2.pressing()) {
+            scoringSubsystem.intakeTop(); // top scoowy motow >w<
         }
-        
-        // set motion
-        switch (scoreSubsysStatus) {
-            case 1:
-                scoringSubsystem.intake();
-                break;
-            case -1:
-                scoringSubsystem.eject();
-                break;
-            default:
-                scoringSubsystem.system_default();
-                break;
+        else if (Controller.ButtonR2.pressing() && !Controller.ButtonR1.pressing()) {
+            scoringSubsystem.intakeMiddle(); // middwe scoowy motow owo
+        }
+        else {
+            scoringSubsystem.system_default(); // stawp aww UwU
         }
 
-        // set descore subsystem status
-        if (Controller.ButtonR2.pressing()) {
-            while (Controller.ButtonR2.pressing()) { wait(20, msec); }
-            descoreSubsysStatus = (descoreSubsysStatus == 1) ? 0 : 1;
+        // --- DESCORE SUBSYSTEM UwU ---
+        if (Controller.ButtonL2.pressing()) { // toggle pistowny >w<
+            while (Controller.ButtonL2.pressing()) { wait(20, msec); } // waity owo
+            descoreSubsysStatus = (descoreSubsysStatus == 1) ? 0 : 1; // fwip pistowny uwu
         }
 
-        // set motion
-        switch (descoreSubsysStatus) {
-            case 1:
-                descoreSubsystem.up();
-                break;
-            default:
-                descoreSubsystem.down();
-                break;
+        if (descoreSubsysStatus == 1) {
+            descoreSubsystem.up(); // pistowny up UwU
+        } else {
+            descoreSubsystem.down(); // pistowny down owo
         }
+
+        wait(20, msec); // wittle waity nya~
     }
 }
 
-// op executor
-
+// =======================
+// Operation Executow UwU
+// =======================
 struct Operation {
-    std::string opCode;
-    std::vector<int> params;
+    std::string opCode; // wittwe code fow opewation OwO
+    std::vector<int> params; // its wittwe nyumbews owo
 };
 
 int stringToInt(const std::string& str) {
     int value;
     std::stringstream ss(str);
     ss >> value;
-    return value;
+    return value; // actuwaw code untouched OwO
 }
 
 void execOperations(const std::string& input) {
     std::stringstream ss(input);
     std::string op;
     
-    // Loop through each operation in the input string
     while (getline(ss, op, ' ')) {
         Operation operation;
-        std::stringstream opStream(op);
-        std::string code;
-        
-        // Get the operation code
-        operation.opCode = op.substr(0, 1);
+        operation.opCode = op.substr(0, 1); // fwst letta is code UwU
 
-        // Parse the parameters (after the first dash, split by '-')
-        std::stringstream paramStream(op.substr(2));  // Skip the first character (the op code) and the dash
+        std::stringstream paramStream(op.substr(2));  // skip op code and dash owo
         std::string param;
         while (getline(paramStream, param, '-')) {
-            operation.params.push_back(stringToInt(param));
+            operation.params.push_back(stringToInt(param)); // pushy nyumbews owo
         }
 
-        // Handle each operation based on the opCode
         switch (operation.opCode[0]) {
             case 'G': {
-                // G-(status:int) # goal lock
                 if (operation.params.size() == 1) {
                     int status = operation.params[0];
-                    std::string output = "OP: GoalLocker Set " + patch::to_string(status);
-                    display.printSystemLog(output.c_str());
-
-                    if (status == 1) {
-                        //mainSubsystem.intake();
-                    } else {
-                        //mainSubsystem.system_default();
-                    }
+                    display.printSystemLog(("OP: GoalLocker Set " + patch::to_string(status)).c_str()); // owo goaw log
                 }
                 break;
             }
             case 'M': {
-                // M-(movecode:int)-(speed:int)-(dist:int)  # move
                 if (operation.params.size() == 3) {
                     int moveCode = operation.params[0];
-                    int speed = operation.params[1];
-                    int dist = operation.params[2];
-                    std::string output = "OP: Move DIR " + patch::to_string(moveCode) + " SPD " + patch::to_string(speed) + " DST " + patch::to_string(dist);
-                    display.printSystemLog(output.c_str());
-                    
-                    // move
+                    int speed    = operation.params[1];
+                    int dist     = operation.params[2];
+                    display.printSystemLog(("OP: Move DIR " + patch::to_string(moveCode) + 
+                        " SPD " + patch::to_string(speed) + 
+                        " DST " + patch::to_string(dist)).c_str()); // movey log UwU
+
                     switch (moveCode) {
-                        case 1: // fwd +dist
-                            driveSystem.rmovesmart(dist*50, speed*20);
-                            break;
-                        case 2: // bwd -dist
-                            driveSystem.rmovesmart(-dist*50, speed*20);
-                            break;
-                        case 3: // turn right +
-                            driveSystem.rturnsmart(dist*5, speed*20);
-                            break;
-                        case 4: // turn left -
-                            driveSystem.rturnsmart(-dist*5, speed*20);
-                            break;
+                        case 1: driveSystem.rmovesmart(dist*50, speed*20); break; // fowwawd zoom OwO
+                        case 2: driveSystem.rmovesmart(-dist*50, speed*20); break; // backyy OwO
+                        case 3: driveSystem.rturnsmart(dist*5, speed*20); break; // tuwny wight UwU
+                        case 4: driveSystem.rturnsmart(-dist*5, speed*20); break; // tuwny weft owo
                     }
                 }
                 break;
             }
             case 'I': {
-                // I-(status:int)   # intake
                 if (operation.params.size() == 1) {
                     int status = operation.params[0];
-                    std::string output = "OP: Intake Set " + patch::to_string(status);
-                    display.printSystemLog(output.c_str());
-
-                    if (status == 1) {
-                        //intakeSystem.in(100);
-                    } else if (status == 2) {
-                        //intakeSystem.out(100);
-                    } else {
-                        //intakeSystem.in(0);
-                    }
+                    display.printSystemLog(("OP: Intake Set " + patch::to_string(status)).c_str()); // intake log UwU
                 }
                 break;
             }
             case 'C': {
-                // C-(status:int)   # conveyor
                 if (operation.params.size() == 1) {
                     int status = operation.params[0];
-                    std::string output = "OP: Conveyor Set " + patch::to_string(status);
-                    display.printSystemLog(output.c_str());
-
-                    if (status == 1) {
-                        //conveyorSystem.up(100);
-                    } else if (status == 2) {
-                        //conveyorSystem.down(100);
-                    } else {
-                        //conveyorSystem.up(0);
-                    }
+                    display.printSystemLog(("OP: Conveyor Set " + patch::to_string(status)).c_str()); // convewy log OwO
                 }
                 break;
             }
             case 'W': {
-                // W-(time:int) # wait
                 if (operation.params.size() == 1) {
                     int time = operation.params[0];
-                    std::string output = "OP: Wait " + patch::to_string(time);
-                    display.printSystemLog(output.c_str());
-
-                    wait(time*100, vex::msec);
+                    display.printSystemLog(("OP: Wait " + patch::to_string(time)).c_str()); // waity log UwU
+                    wait(time*100, vex::msec); // w-waity owo
                 }
                 break;
             }
@@ -373,49 +184,33 @@ void execOperations(const std::string& input) {
     }
 }
 
-// autonomous function
+// =======================
+// Autonomous UwU
+// =======================
 void autonomous(void) {
     display.setUIScreenID(2);
-    //return;
-
-    // G-(status:int 0=on 1=off)
-    // M-(movecode:int 1=fwd 2=bwd 3=rwd 4=lwd)-(speed:int *20)-(dist:int *50 or *5)
-    // I-(status:int 1=in 2=out 0=off)
-    // C-(status:int 1=up 2=down 0=off)
-    // W-(time:int *100)
-
-    // backup and then clear field
-    //execOperations("M-1-40-40 W-10 M-2-100-150");
-    //execOperations("M-2-60-90");
-
-    // score 1st point, head to second, score
-    //execOperations("C-1 M-2-5-3 M-4-5-10 C-0 I-1 M-1-5-11 I-0 C-1 M-3-5-2 W-5 C-0");
-    
-    // hit the high stake
-    //execOperations("M-2-5-17");
-    // move to 3rd AINT DOING THIS SHIT NO MORE
-    // execOperations("M-3-5-20 I-1 M-1-4-22 I-0 C-1 M-3-4-17 C-0");
-
-    //execOperations("G-1 M-1-3-4 G-0");
+    // Add yuor autonomous codey here OwO nya~ 
 }
 
-// pre-autonomous function
+// =======================
+// Pre-Autonomous UwU
+// =======================
 void pre_auton(void) {
-    hwInit();
+    hwInit(); // initiawize aww da cute wobot stuff UwU
 }
 
+// =======================
+// Main Event UwU
+// =======================
 int main() {
-    // Run the pre-autonomous function
     pre_auton();
-    //autonomous();
 
-    // Set up callbacks for autonomous and driver control periods
     Competition.autonomous(autonomous);
     Competition.drivercontrol(userctl);
 
-    // Prevent main from exiting with an infinite loop
-
     while (true) {
-        wait(100, msec);
+        wait(100, msec); // wittle waity owo
     }
 }
+
+// Aww k-nyown waws of aviation say bees shouwdn't fwy, but uwu they do anyway x3 >w< 

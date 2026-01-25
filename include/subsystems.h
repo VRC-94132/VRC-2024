@@ -7,11 +7,15 @@
 class ScoringSubsystem {
 private:
     vex::motor &_motor1;
-    vex::motor &_motor2;
+    vex::motor &_miniMotor1;
+    vex::motor &_miniMotor2;
+
 public:
-    ScoringSubsystem(vex::motor &motor1, vex::motor &motor2);
+    ScoringSubsystem(vex::motor &motor1, vex::motor &miniMotor1, vex::motor &miniMotor2);
+
     void system_default();
-    void intake();
+    void intakeTop();
+    void intakeMiddle();
     void eject();
 };
 
